@@ -123,16 +123,16 @@ router.get('/bccallback',function(req,res){
 router.get ('/bcconfirm',function(req,res){
   //checar si el pago esta confirmado
   console.log('*** /api/bcconfirm');
-  var result=false;
+  var result=false, paid=0, tx=''
   if (req.session.satoshis>0) {
     result=true;
+    paid=req.session.satoshis;
+    tx=req.session.transaction_hash;
     req.session.satoshis=0;
     req.session.address='';
     req.session.confirmations=-1;
-  } else {
-    result=false;
-  }
-  res.send({result:result,session: req.session});
+  };
+  res.send({result:result, paid: paid, tx: tx});
 });
 
 router.get('/bcdebugcallbacks',function(req,res){
