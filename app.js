@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 var routes = require('./routes/index');
 var api = require('./routes/api');
@@ -16,6 +17,17 @@ app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
+global.sessionStore = new session.MemoryStore(); //we need to access the sessionstore for the blockchain.info callback
+
+app.use(session({
+  store: global.sessionStore,
+  secret: 'kap7912h1k0qnewhateverYouWant',
+  maxAge: 3600,
+  resave: false,
+  saveUninitialized: false
+}));
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

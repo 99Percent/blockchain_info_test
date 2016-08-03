@@ -1,5 +1,11 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  h3= title
+  form(name="pago-con-bitcoin")
+    input(type="text", name="importe", placeholder="ingrese importe")
+    button(type="button", id="pagar")
+      | pagar!
+  div(id="timer")
+  div(id="qrcode")
+  div(id="paymentinfo")

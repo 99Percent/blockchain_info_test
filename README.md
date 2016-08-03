@@ -1,14 +1,15 @@
 # blockchain_info_test
-Testing of blockchain info bitcoin address creation and payment
+Testing del api de blockchain.info para generar y recibir pagos en bitcoin
 
 ### Requisitos
 
 Node JS, npm etc
-localtunnnel con ruby (para modo desarollo solamente)
+Wallet de Blockchain.info
+localtunnnel con ruby (solo para modo desarollo)
 
 ### config
 
-Es necesario tener un archivo config.js en el mismo directorio de app.js que tenga el siguiente contenido:
+Es necesario tener un archivo config.js en el mismo directorio de app.js así:
 
 ```javascript
 
@@ -26,7 +27,7 @@ module.exports = config;
 ```
 
 Este archivo obviamente contiene datos sensibles por lo tanto esta en el .gitignore.
-Una vez puesto en producción, cambiar el callbackUrl para que sea directo al url del servidor de producción.
+Una vez puesto en producción (copiar manualmente config.js!), cambiar el callbackUrl para que sea directo al url del servidor de producción.
 xpub: es la llave pública de la wallet, y lo puedes obtener en el portal de blockchain.info
 apikey: Lo puedes solicitar a blockchain.info una vez dada de alta la cuenta de bitcoin
 secret: sirve para filtrar callbacks falsos y puede ser cualquier texto al azar.
@@ -44,3 +45,7 @@ debido a que localtunnel tiene un bug (https://github.com/localtunnel/localtunne
 ```
 ruby localtunnel.rb --port 3000 --subdomain [cualquier nombre de subdominio que desees]
 ```
+
+### Uso de Express Session
+
+Para guardar el dato de la direccion de bitcoin para recibir el pago usamos express session en modo MemomryStore. Esto no es recomendable en modo de producción, y es mejor usar una base de datos como mongodb o mysql para la session o las formas de pago

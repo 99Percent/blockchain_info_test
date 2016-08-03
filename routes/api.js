@@ -5,6 +5,7 @@ var http = require('http');
 
 var router = express.Router();
 
+
 function getHttp(getOptions, callback) { //simple get http with json data
   console.log('getHttp:',getOptions);
   getOptions.method='GET';
@@ -60,16 +61,29 @@ function getHttps(getOptions, callback) { //simple get https with json data
 };
 
 
+router.get('/mxnbtcrate',function(req,res){
+  var options = {
+    host : 'api.bitcoinaverage.com',
+    path : '/ticker/global/all'
+  };
+  getHttps(options,function(jsondata){
+    res.send({btcrate: jsondata['MXN'].ask}); //puede ser .bid .last
+  });
+});
+
 router.get('/bcgetnewaddress',function(req,res){
   console.log('*** /api/bcgetnewaddress');
   var options = {
     host: 'api.blockchain.info',
     path: '/v2/receive?xpub='+config.blockchain_opts.xpub+
-          '&callback='+encodeURIComponent(config.blockchain_opts.callbackUrl+'/api/bccallback?secret='+config.blockchain_opts.secret)+
+          '&callback='+encodeURIComponent(config.blockchain_opts.callbackUrl+'/api/bccallback?secret='+config.blockchain_opts.secret+'&sessionid='+req.session.id)+
           '&key='+config.blockchain_opts.apikey
   };
   getHttps(options,function(jsondata){
-    res.json(jsondata);
+    req.session.satoshis=0;
+    req.session.btcaddress=jsondata.address;
+    req.session.save();
+    res.send({address: jsondata.address});
   });
 });
 
@@ -77,10 +91,43 @@ router.get('/bccallback',function(req,res){
   console.log('*** /api/bccallback',req.query);
   if (req.query.secret!=config.blockchain_opts.secret) {
     console.error('BAD callback secret:',req.query.secret);
+    res.end();
   } else {
-    console.log('Good callback secret!')
+    global.sessionStore.get(req.query.sessionid,function(err,session){
+      if (err) {
+        console.error('global.sessionStore.get error:',err)
+      };
+      if (typeof session=='undefined') {
+        console.error('session not found, has probably expired');
+        res.send('*ok*'); //mandar de todos modos
+      } else {
+        session.satoshis=req.query.value;
+        session.address=req.query.address;
+        session.confirmations=req.query.confirmations;
+        session.transaction_hash=req.query.transaction_hash;
+        global.sessionStore.set(req.query.sessionid,session,function(err){
+          if (err) {
+            console.err('global.sessionStore.save error:',err);
+          }
+          res.send('*ok*'); //necesario sino se acumulan los callbacks en blockchain.info
+        });
+      }
+    });
   };
-  res.send('*ok*'); //necesario sino se acumulan los callbacks en blockchain.info
+});
+
+router.get ('/bcconfirm',function(req,res){
+  console.log('*** /api/bcconfirm');
+  var result=false;
+  if (req.session.satoshis>0) {
+    result=true;
+    req.session.satoshis=0;
+    req.session.address='';
+    req.session.confirmations=-1;
+  } else {
+    result=false;
+  }
+  res.send({result:result,session: req.session});
 });
 
 router.get('/bcdebugcallbacks',function(req,res){
