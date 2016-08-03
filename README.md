@@ -48,4 +48,17 @@ ruby localtunnel.rb --port 3000 --subdomain [cualquier nombre de subdominio que 
 
 ### Uso de Express Session
 
-Para guardar el dato de la direccion de bitcoin para recibir el pago usamos express session en modo MemomryStore. Esto no es recomendable en modo de producción, y es mejor usar una base de datos como mongodb o mysql para la session o las formas de pago
+Para guardar el dato de la direccion de bitcoin para recibir el pago usamos express session con MemomryStore. Esto no es recomendable en modo de producción, y es mejor usar una base de datos como mongodb o mysql para la session o las formas de pago
+
+
+### Funcionalidad
+
+1. Primero obtenemos una wallet con blockchain.info
+2. Solicitamos la api key. Tardan uno o dos días en aprobar la solicitud y mandarla por correo.
+3. Para hacer cobros, pedimos con la api una nueva direccion de bitcoin que está relacionada con la cartera de blockchain.info. Esta dirección es única y se usa solamente una vez. 
+4. El cliente manda los fondos a esta dirección.
+5. Blockchain.info nos manda un callback indicando que la dirección ya tiene fondos.
+6. En el frontend, presentamos al cliente un código QR con los datos para hacer el pago. 
+7. Hacemos un polling (idealmente sería con un websocket), a nuestro api para checar si blockchain ya hio el callback.
+8. Tambien se puede ver publicamente la direccion con un explorador de bloques de bitcoin como el mismo blockchain.info o blockexplorer.com
+9. Cerramos el código QR, y confirmamos con el cliente los fondos recibidos.
