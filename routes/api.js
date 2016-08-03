@@ -60,8 +60,8 @@ function getHttps(getOptions, callback) { //simple get https with json data
   get_req.end();
 };
 
-
 router.get('/mxnbtcrate',function(req,res){
+  //obtener el tipo de cambio de bitcoins - pesos en este momento
   var options = {
     host : 'api.bitcoinaverage.com',
     path : '/ticker/global/all'
@@ -72,6 +72,8 @@ router.get('/mxnbtcrate',function(req,res){
 });
 
 router.get('/bcgetnewaddress',function(req,res){
+  //obtener una nueva direccion para enviar pago
+  //todo: usar arrays para poder tener varios pagos pendientes simultaneamente (o base de datos)
   console.log('*** /api/bcgetnewaddress');
   var options = {
     host: 'api.blockchain.info',
@@ -88,6 +90,8 @@ router.get('/bcgetnewaddress',function(req,res){
 });
 
 router.get('/bccallback',function(req,res){
+  //blockchain.info hace el callback a esta direccion indicando que ya esta el pago en la red
+  //se usa el session del usuario que efectua el pago, para actualizarlo
   console.log('*** /api/bccallback',req.query);
   if (req.query.secret!=config.blockchain_opts.secret) {
     console.error('BAD callback secret:',req.query.secret);
@@ -117,6 +121,7 @@ router.get('/bccallback',function(req,res){
 });
 
 router.get ('/bcconfirm',function(req,res){
+  //checar si el pago esta confirmado
   console.log('*** /api/bcconfirm');
   var result=false;
   if (req.session.satoshis>0) {
@@ -131,6 +136,7 @@ router.get ('/bcconfirm',function(req,res){
 });
 
 router.get('/bcdebugcallbacks',function(req,res){
+  //utileria para checar si hay callbacks atorados en blockchain.info
   console.log('*** /api/bcdebugcallback');
   var options = {
     host: 'api.blockchain.info',
